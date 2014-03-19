@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">UkrpostTracker</string>
+    <string name="action_add_parcel">Add parcel</string>
+    <string name="no_parcels">You have not any parcels yet.</string>
+</resources>
