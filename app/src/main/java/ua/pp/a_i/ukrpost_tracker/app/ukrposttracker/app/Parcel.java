@@ -1,6 +1,11 @@
 package ua.pp.a_i.ukrpost_tracker.app.ukrposttracker.app;
 
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
 import java.util.Date;
 
 /**
@@ -12,6 +17,12 @@ public class Parcel {
     private String Barcode;
     private String Status;
     private Date StatusDate;
+
+
+    static ParcelsApp app=new ParcelsApp();
+    ParcelDatabaseHelper helper=new ParcelDatabaseHelper();
+    SQLiteDatabase db;
+
 
     public int getId() {
         return Id;
@@ -53,6 +64,17 @@ public class Parcel {
         StatusDate = statusDate;
     }
 
+    public void InsertParcelToDb(Parcel parcel){
+        db=helper.getWritableDatabase();
+        ContentValues values=new ContentValues();
+        values.put("Name",parcel.Name);
+        values.put("Barcode",parcel.Barcode);
+        values.put("Status",parcel.Status);
+        values.put("StatusDate",parcel.getStatusDate().toString());
+        db.insert("Parcels",null,values);
+        db.close();
+    }
+
 
     public Parcel(int id, String name, String barcode, String status, Date statusDate) {
         Id = id;
@@ -61,4 +83,28 @@ public class Parcel {
         Status = status;
         StatusDate = statusDate;
     }
+
+    class ParcelDatabaseHelper extends SQLiteOpenHelper{
+        ParcelDatabaseHelper() {
+            super(app.getContext(), "Parcels", null, 1);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            db.execSQL("CREATE TABLE Parcels (Id NUMBER, Name TEXT, Barcode TEXT, Status TEXT, StatusUpdate DATE)");
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            db.execSQL("DROP TABLE Parcels");
+            onCreate(db);
+        }
+    }
+
+
+
+
+
+
+
 }
