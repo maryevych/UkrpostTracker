@@ -1,6 +1,7 @@
 package ua.pp.a_i.ukrpost_tracker.app.ukrposttracker.app;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,10 +13,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 
 public class MainActivity extends Activity {
+    public static final int NEW_PARCEL=1;
+
     ArrayList<Parcel> parcels;
     TextView noParcelsTextView;
     ListView parcelsListView;
@@ -31,12 +33,12 @@ public class MainActivity extends Activity {
         noParcelsTextView=(TextView)findViewById(R.id.noParcelsTextView);
         parcelsListView=(ListView)findViewById(R.id.parcelsListView);
         parcels=new ArrayList<>();
-        parcels.add(new Parcel(1,"first","","",new Date()));
-        parcels.add(new Parcel(2,"second","","",new Date()));
+       /* parcels=Parcel.getParcelsFromDb();
 
         if(parcels.size()!=0){
             layout.removeView(noParcelsTextView);
         }
+        */
 
         ParcelArrayAdapter adapter=new ParcelArrayAdapter();
         parcelsListView.setAdapter(adapter);
@@ -59,7 +61,8 @@ public class MainActivity extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_add_parcel) {
-            return true;
+            Intent intent=new Intent(MainActivity.this,NewParcelActivity.class);
+            startActivityForResult(intent,NEW_PARCEL);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -87,4 +90,17 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode){
+            case NEW_PARCEL:
+                if(resultCode==NewParcelActivity.RESULT_OK) {
+                    Bundle bundle = data.getExtras();
+                    String name = bundle.getString("name");
+                    String barcode = bundle.getString("barcode");
+
+                }
+                break;
+        }
+    }
 }

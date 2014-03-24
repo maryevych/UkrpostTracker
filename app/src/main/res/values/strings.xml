@@ -4,4 +4,7 @@
     <string name="app_name">UkrpostTracker</string>
     <string name="action_add_parcel">Add parcel</string>
     <string name="no_parcels">You have not any parcels yet.</string>
+    <string name="title_activity_new_parcel">Add new parcel</string>
+    <string name="action_settings">Settings</string>
+
 </resources>

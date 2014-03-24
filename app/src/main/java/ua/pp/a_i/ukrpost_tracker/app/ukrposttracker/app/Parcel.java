@@ -2,10 +2,14 @@ package ua.pp.a_i.ukrpost_tracker.app.ukrposttracker.app;
 
 
 import android.content.ContentValues;
-import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -20,8 +24,9 @@ public class Parcel {
 
 
     static ParcelsApp app=new ParcelsApp();
-    ParcelDatabaseHelper helper=new ParcelDatabaseHelper();
-    SQLiteDatabase db;
+
+    private static ParcelDatabaseHelper helper=new ParcelDatabaseHelper();
+    private static SQLiteDatabase db;
 
 
     public int getId() {
@@ -64,7 +69,7 @@ public class Parcel {
         StatusDate = statusDate;
     }
 
-    public void InsertParcelToDb(Parcel parcel){
+    public void insertParcelToDb(Parcel parcel){
         db=helper.getWritableDatabase();
         ContentValues values=new ContentValues();
         values.put("Name",parcel.Name);
@@ -73,6 +78,31 @@ public class Parcel {
         values.put("StatusDate",parcel.getStatusDate().toString());
         db.insert("Parcels",null,values);
         db.close();
+    }
+
+    public static ArrayList<Parcel> getParcelsFromDb(){
+        ArrayList<Parcel> parcels=new ArrayList<>();
+        db=helper.getReadableDatabase();
+        Cursor cursor=db.query("Parcels",new String[]{"Id","Name","Barcode","Status","StatusDate"},"",null,"","","");
+        DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        Boolean end=cursor.moveToFirst();
+        while(!end){
+            int id=cursor.getInt(cursor.getColumnIndex("Id"));
+            String name=cursor.getString(cursor.getColumnIndex("Name"));
+            String barcode=cursor.getString(cursor.getColumnIndex("Barcode"));
+            String status=cursor.getString(cursor.getColumnIndex("Status"));
+            Date statusDate=null;
+            try {
+                statusDate=dateFormat.parse(cursor.getString(cursor.getColumnIndex("Id")));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Parcel parcel=new Parcel(id,name,barcode,status,statusDate);
+            parcels.add(parcel);
+            end=cursor.moveToNext();
+        }
+        return parcels;
     }
 
 
@@ -84,7 +114,9 @@ public class Parcel {
         StatusDate = statusDate;
     }
 
-    class ParcelDatabaseHelper extends SQLiteOpenHelper{
+
+
+    static class ParcelDatabaseHelper extends SQLiteOpenHelper{
         ParcelDatabaseHelper() {
             super(app.getContext(), "Parcels", null, 1);
         }
@@ -100,11 +132,5 @@ public class Parcel {
             onCreate(db);
         }
     }
-
-
-
-
-
-
 
 }
