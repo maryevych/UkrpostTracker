@@ -69,7 +69,7 @@ public class Parcel {
         StatusDate = statusDate;
     }
 
-    public void insertParcelToDb(Parcel parcel){
+    public static void insertParcelToDb(Parcel parcel){
         db=helper.getWritableDatabase();
         ContentValues values=new ContentValues();
         values.put("Name",parcel.Name);
@@ -98,7 +98,7 @@ public class Parcel {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            Parcel parcel=new Parcel(id,name,barcode,status,statusDate);
+            Parcel parcel=new Parcel(name,barcode,status,statusDate);
             parcels.add(parcel);
             end=cursor.moveToNext();
         }
@@ -106,14 +106,12 @@ public class Parcel {
     }
 
 
-    public Parcel(int id, String name, String barcode, String status, Date statusDate) {
-        Id = id;
+    public Parcel(String name, String barcode, String status, Date statusDate) {
         Name = name;
         Barcode = barcode;
         Status = status;
         StatusDate = statusDate;
     }
-
 
 
     static class ParcelDatabaseHelper extends SQLiteOpenHelper{

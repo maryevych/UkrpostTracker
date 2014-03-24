@@ -3,6 +3,7 @@ package ua.pp.a_i.ukrpost_tracker.app.ukrposttracker.app;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Xml;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -11,8 +12,13 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.Date;
 
 
 public class NewParcelActivity extends Activity {
@@ -28,11 +34,11 @@ public class NewParcelActivity extends Activity {
         String name=((EditText)findViewById(R.id.parcelNameEditText)).getText().toString();
         String barcode=((EditText)findViewById(R.id.parcelNameEditText)).getText().toString();
         ParcelTask task=new ParcelTask(NewParcelActivity.this);
-        task.execute(barcode);
+        task.execute(barcode,name);
     }
 
 
-    class ParcelTask extends AsyncTask<String, Void, String> {
+    class ParcelTask extends AsyncTask<String, Void, Parcel> {
         private Activity activity;
 
         ParcelTask(Activity activity) {
@@ -40,30 +46,48 @@ public class NewParcelActivity extends Activity {
         }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Parcel doInBackground(String... params) {
             HttpClient client=new DefaultHttpClient();
             HttpGet get=new HttpGet();
             String barcode=params[0];
+            String name=params[1];
             get.setURI(URI.create("http://services.ukrposhta.com/barcodestatistic/barcodestatistic.asmx/GetBarcodeInfo?guid=fcc8d9e1-b6f9-438f-9ac8-b67ab44391dd&culture=uk&barcode=" + barcode));
-            String result="";
+            InputStream stream=null;
             try {
                 Thread.sleep(5000);
                 HttpEntity entity=client.execute(get).getEntity();
-                byte[] arr=new byte[(int)entity.getContentLength()];
-                entity.getContent().read(arr);
-                result=arr.toString();
+                stream=entity.getContent();
             }
             catch (Exception e){
                 Toast.makeText(NewParcelActivity.this,e.getMessage(),Toast.LENGTH_LONG).show();
             }
-            return result;
+            XmlPullParser parser= Xml.newPullParser();
+            Parcel parcel=null;
+            try {
+                parser.setInput(new InputStreamReader(stream));
+                int code=parser.getEventType();
+                String status="";
+                while (code!=XmlPullParser.END_DOCUMENT) {
+                    if(code==XmlPullParser.START_TAG){
+                        if(parser.getName()=="eventdescription"){
+                            status=parser.getText();
+                        }
+                    }
+                    code=parser.next();
+                }
+                parcel=new Parcel(name,barcode,status,new Date());
+                Parcel.insertParcelToDb(parcel);
 
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return parcel;
         }
 
         @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            Toast.makeText(activity,result,Toast.LENGTH_LONG).show();
+        protected void onPostExecute(Parcel parcel) {
+            super.onPostExecute(parcel);
+            Toast.makeText(activity,parcel.getName(),Toast.LENGTH_LONG).show();
             activity.finish();
         }
     }
