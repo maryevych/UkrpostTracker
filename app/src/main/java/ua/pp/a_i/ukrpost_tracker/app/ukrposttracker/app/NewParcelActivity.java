@@ -69,8 +69,8 @@ public class NewParcelActivity extends Activity {
                 String status="";
                 while (code!=XmlPullParser.END_DOCUMENT) {
                     if(code==XmlPullParser.START_TAG){
-                        if(parser.getName()=="eventdescription"){
-                            status=parser.getText();
+                        if(parser.getName().equals("eventdescription")){
+                            status=parser.getName();
                         }
                     }
                     code=parser.next();
